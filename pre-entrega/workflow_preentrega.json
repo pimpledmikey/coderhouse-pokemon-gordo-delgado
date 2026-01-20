@@ -1,0 +1,399 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pokemon-check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "174f5b2b-5c36-46e3-b08b-8c16a109a5c9",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1408,
+        160
+      ],
+      "webhookId": "pokemon-webhook-id"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "pokemon-id-set",
+              "name": "pokemonId",
+              "value": "={{ $json.body.pokemonId || Math.floor(Math.random() * 150) + 1 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5234050a-b6fa-4e4e-b282-f33d99062e6e",
+      "name": "Set Pokemon ID",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1184,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://pokeapi.co/api/v2/pokemon/{{ $json.pokemonId }}",
+        "options": {}
+      },
+      "id": "72821f27-fc18-404e-8c5f-d77e22e48a5d",
+      "name": "Pokemon API Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "pokemon-name",
+              "name": "nombre",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "pokemon-weight",
+              "name": "peso",
+              "value": "={{ $json.weight }}",
+              "type": "number"
+            },
+            {
+              "id": "pokemon-height",
+              "name": "altura",
+              "value": "={{ $json.height }}",
+              "type": "number"
+            },
+            {
+              "id": "pokemon-type",
+              "name": "tipo",
+              "value": "={{ $json.types[0].type.name }}",
+              "type": "string"
+            },
+            {
+              "id": "pokemon-sprite",
+              "name": "imagen",
+              "value": "={{ $json.sprites.front_default }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8f67d421-3931-4dd1-8e12-04411da08a40",
+      "name": "Transformar Datos Pokemon",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -752,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-peso",
+              "leftValue": "={{ $json.peso }}",
+              "rightValue": 500,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2412b966-50fe-49cf-9b98-21a930879953",
+      "name": "IF Pokemon Pesado",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mensaje-pesado",
+              "name": "mensaje",
+              "value": "= ¡POKEMON PESADO DETECTADO!\nNombre: {{ $json.nombre.toUpperCase() }}\nPeso: {{ $json.peso / 10 }} kg\nAltura: {{ $json.altura / 10 }} m\nTipo: {{ $json.tipo }}\n\n¡Este Pokémon supera los 50 kg! omas ",
+              "type": "string"
+            },
+            {
+              "id": "asunto-pesado",
+              "name": "asunto",
+              "value": "=🏋️ Alerta: Pokemon Pesado - {{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "categoria",
+              "name": "categoria",
+              "value": "PESADO",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "c9b91176-7f5d-4c13-871d-31c0a31d68fe",
+      "name": "Preparar Alerta Pesado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "mensaje-ligero",
+              "name": "mensaje",
+              "value": "=🪶 Pokemon Ligero Encontrado\n\nNombre: {{ $json.nombre.toUpperCase() }}\nPeso: {{ $json.peso / 10 }} kg\nAltura: {{ $json.altura / 10 }} m\nTipo: {{ $json.tipo }}\n\nEste Pokémon es liviano (menos de 50 kg).",
+              "type": "string"
+            },
+            {
+              "id": "asunto-ligero",
+              "name": "asunto",
+              "value": "=🪶 Info: Pokemon Ligero - {{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "categoria-ligero",
+              "name": "categoria",
+              "value": "LIGERO",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "4ed1b3f4-3fa7-4094-a6d8-2dd459f0dcb0",
+      "name": "Preparar Info Ligero",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "helpbinfo@gmail.com",
+        "toEmail": "={{ ($json.body && $json.body.email ? String($json.body.email).replace(/[<>'\"=\\s]/g, '') : 'pimpledmikey@gmail.com') }}",
+        "subject": "={{ $json.asunto }}",
+        "options": {}
+      },
+      "id": "afdbfde4-b88f-4eb0-adfa-9227d683d5f8",
+      "name": "Enviar Email Pesado",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        32
+      ],
+      "webhookId": "6505bcbe-9b3d-42d1-a8a8-26d1bd1cbaea",
+      "credentials": {
+        "smtp": {
+          "id": "sZjEhVAcDMa4T3aE",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "helpbinfo@gmail.com",
+        "toEmail": "={{ ($json.body && $json.body.email ? String($json.body.email).replace(/[<>'\"=\\s]/g, '') : 'pimpledmikey@gmail.com') }}",
+        "subject": "={{ $json.asunto }}",
+        "options": {}
+      },
+      "id": "886b13eb-01bb-4c54-a813-3044cc337830",
+      "name": "Enviar Email Ligero",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        272
+      ],
+      "webhookId": "d76b4c38-b606-4911-a890-f5fd7734f7d4",
+      "credentials": {
+        "smtp": {
+          "id": "sZjEhVAcDMa4T3aE",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ ( $items('Preparar Alerta Pesado') && $items('Preparar Alerta Pesado')[0] && $items('Preparar Alerta Pesado')[0].json ) ? { success: true, pokemon: $items('Preparar Alerta Pesado')[0].json.nombre || null, categoria: $items('Preparar Alerta Pesado')[0].json.categoria || null, peso_kg: (($items('Preparar Alerta Pesado')[0].json.peso || 0) / 10), mensaje: 'Notificación enviada correctamente', timestamp: $now.toISO() } : { success: true } }}",
+        "options": {}
+      },
+      "id": "89515d0f-fbed-4fef-b8bb-512c88d36f7c",
+      "name": "Respuesta Webhook Pesado",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ ( $items('Preparar Info Ligero') && $items('Preparar Info Ligero')[0] && $items('Preparar Info Ligero')[0].json ) ? { success: true, pokemon: $items('Preparar Info Ligero')[0].json.nombre || null, categoria: $items('Preparar Info Ligero')[0].json.categoria || null, peso_kg: (($items('Preparar Info Ligero')[0].json.peso || 0) / 10), mensaje: 'Notificación enviada correctamente', timestamp: $now.toISO() } : { success: true } }}",
+        "options": {}
+      },
+      "id": "80861b75-88f0-44de-a59d-065ab4dd49ec",
+      "name": "Respuesta Webhook Ligero",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        144,
+        272
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Pokemon ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Pokemon ID": {
+      "main": [
+        [
+          {
+            "node": "Pokemon API Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pokemon API Request": {
+      "main": [
+        [
+          {
+            "node": "Transformar Datos Pokemon",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transformar Datos Pokemon": {
+      "main": [
+        [
+          {
+            "node": "IF Pokemon Pesado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Pokemon Pesado": {
+      "main": [
+        [
+          {
+            "node": "Preparar Alerta Pesado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Info Ligero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Alerta Pesado": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Pesado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Info Ligero": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email Ligero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Pesado": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Webhook Pesado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Email Ligero": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Webhook Ligero",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ee3c0c9cc55d71bb5f9de7e3f589066d6b29e927189685d18eb07cccadd2ebdf"
+  }
+}
